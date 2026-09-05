@@ -19,6 +19,8 @@ Authenticates a user and returns a JWT token.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "token": "eyJhbG...",
   "user": {
     "id": "USR-1029",
@@ -35,7 +37,9 @@ Authenticates a user and returns a JWT token.
 Invalidates the current active session token.
 **Response (200 OK):**
 ```json
-{ "success": true, "message": "Logged out successfully" }
+{
+  "status": "success",
+ "success": true, "message": "Logged out successfully" }
 ```
 
 ### `GET /auth/me`
@@ -43,6 +47,8 @@ Returns the currently authenticated user's details and permissions.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "id": "USR-1029",
   "name": "Alex Wong",
   "email": "admin@efresh.example",
@@ -62,6 +68,8 @@ Retrieves top-level KPIs for the current account.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "metrics": {
     "activeOrders": 6,
     "inTransitDeliveries": 2,
@@ -77,6 +85,8 @@ Retrieves the current balance and aging summary for the account.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "totalOutstanding": 5440.00,
   "aging": {
     "current": 2020.00,
@@ -97,6 +107,8 @@ Retrieves the most recent activities (Orders, Deliveries).
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "recentOrders": [
     {
       "poId": "PO-10482",
@@ -162,23 +174,74 @@ Retrieves a paginated list of products available to the customer's specific pric
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "data": [
     {
-      "id": "PRD-1029",
-      "sku": "AVH20",
-      "name": "Avocado Hass",
-      "category": "Fruit",
-      "unit_type_name": "Tray 20",
-      "unit_type_id": "ut-001",
-      "unit_type_uom": "tray",
-      "startingCost": 28.50,
+      "id": "1",
+      "name": "Apple Box Granny Smith (12kg JUICE GRADE)",
+      "category": "All Products",
+      "startingCost": 3.29,
+      "unitTypes": [
+        {
+          "name": "Box"
+        },
+        {
+          "name": "Kg"
+        }
+      ],
       "priceTiers": [
-        { "minQty": 1, "maxQty": 4, "price": 28.50 },
-        { "minQty": 5, "maxQty": 9, "price": 27.20 },
-        { "minQty": 10, "maxQty": null, "price": 25.80 }
+        {
+          "unitType": "Box",
+          "rangeMin": 1,
+          "rangeMax": 5,
+          "price": 45,
+          "markupPercentage": 100,
+          "minMarkupPercentage": 80
+        },
+        {
+          "unitType": "Box",
+          "rangeMin": 6,
+          "rangeMax": 10,
+          "price": 42.75,
+          "markupPercentage": 90,
+          "minMarkupPercentage": 80
+        },
+        {
+          "unitType": "Box",
+          "rangeMin": 11,
+          "rangeMax": null,
+          "price": 39.38,
+          "markupPercentage": 75,
+          "minMarkupPercentage": 80
+        },
+        {
+          "unitType": "Kg",
+          "rangeMin": 1,
+          "rangeMax": 5,
+          "price": 3.76,
+          "markupPercentage": 100,
+          "minMarkupPercentage": 80
+        },
+        {
+          "unitType": "Kg",
+          "rangeMin": 6,
+          "rangeMax": 10,
+          "price": 3.57,
+          "markupPercentage": 90,
+          "minMarkupPercentage": 80
+        },
+        {
+          "unitType": "Kg",
+          "rangeMin": 11,
+          "rangeMax": null,
+          "price": 3.29,
+          "markupPercentage": 75,
+          "minMarkupPercentage": 80
+        }
       ],
       "stockStatus": "In Stock",
-      "imageUrl": "https://api.efresh.example/images/avocado.jpg"
+      "imageUrl": null
     }
   ],
   "pagination": { "total": 150, "page": 1, "limit": 20, "totalPages": 8 }
@@ -189,10 +252,14 @@ Retrieves a paginated list of products available to the customer's specific pric
 Retrieves all available product categories.
 **Response (200 OK):**
 ```json
-[
-  { "id": "cat_seafood", "name": "Seafood", "count": 45 },
-  { "id": "cat_meat", "name": "Meat & Poultry", "count": 82 }
-]
+{
+  "status": "success",
+  "data": 
+  [
+    { "id": "cat_seafood", "name": "Seafood", "count": 45 },
+    { "id": "cat_meat", "name": "Meat & Poultry", "count": 82 }
+  ]
+}
 ```
 
 
@@ -206,6 +273,8 @@ Retrieves the user's active shopping cart.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "id": "CRT-8821",
   "items": [
     {
@@ -233,12 +302,15 @@ Adds a product to the cart.
 ```json
 {
   "productId": "PRD-1029",
-  "quantity": 10
+  "quantity": 10,
+  "unitType": "Box"
 }
 ```
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "id": "CRT-8821",
   "items": [
     {
@@ -264,7 +336,12 @@ Adds a product to the cart.
 Updates the quantity of a specific cart item.
 **Request Body:**
 ```json
-{ "quantity": 12 }
+{
+  "quantity": 12,
+  "price": 44.99,
+  "unitType": "Box"
+
+}
 ```
 **Response (200 OK):** Returns the updated cart object.
 
@@ -276,37 +353,45 @@ Removes an item from the cart.
 Retrieves the user's active delivery locations.
 **Response (200 OK):**
 ```json
-[
-  {
-    "id": "loc-001",
-    "name": "Brunswick Store",
-    "address": "248 Sydney Rd",
-    "deliverTo":{
-      "id":"loc-001",
-      "storeName":"Melbourne Fresh Foods ",
-      "storeAddress":"123 Market St, Melbourne VIC"
-    },
-    "costCentres": [
-      { "id": "cc-01", "name": "Brunswick Retail" }
-    ],
-    "receivingContacts": [
-      { "id": "rc-01", "name": "Jordan Mills", "phone": "0412 555 221" }
-    ],
-    "preferredWindows": [
-      "8:00 AM - 10:00 AM",
-      "10:00 AM - 12:00 PM"
-    ]
-  }
-]
+{
+  "status": "success",
+  "data": 
+  [
+    {
+      "id": "loc-001",
+      "name": "Brunswick Store",
+      "address": "248 Sydney Rd",
+      "deliverTo":{
+        "id":"loc-001",
+        "storeName":"Melbourne Fresh Foods ",
+        "storeAddress":"123 Market St, Melbourne VIC"
+      },
+      "costCentres": [
+        { "id": "cc-01", "name": "Brunswick Retail" }
+      ],
+      "receivingContacts": [
+        { "id": "rc-01", "name": "Jordan Mills", "phone": "0412 555 221" }
+      ],
+      "preferredWindows": [
+        "8:00 AM - 10:00 AM",
+        "10:00 AM - 12:00 PM"
+      ]
+    }
+  ]
+}
 ```
 ### `GET /locations/stors`
 Retrieves all delivery locations (stores) available to the current user for ordering and filtering.
 **Response (200 OK):**
 ```json
-[
-  { "id": "LOC-001", "name": "Brunswick Store" },
-  { "id": "LOC-002", "name": "Richmond Store" }
-]
+{
+  "status": "success",
+  "data": 
+  [
+    { "id": "LOC-001", "name": "Brunswick Store" },
+    { "id": "LOC-002", "name": "Richmond Store" }
+  ]
+}
 ```
 
 ### `GET /po-number`
@@ -314,6 +399,8 @@ Generates a new, unique Purchase Order / Internal Reference number from the back
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "poReference": "STORE-8848"
 }
 ```
@@ -322,30 +409,34 @@ Generates a new, unique Purchase Order / Internal Reference number from the back
 Retrieves available payment methods and terms for the account.
 **Response (200 OK):**
 ```json
-[
-  {
-    "id": "pay-opt-01",
-    "title": "7 Day · Direct Debit",
-    "description": "Order on account. The invoice balance is automatically collected by Direct Debit on the 7-day due date.",
-    "savedAccount": "Saved account · **** 4821",
-    "summary": {
-      "paymentTerm": "7 days from invoice",
-      "method": "Direct Debit · **** 4821",
-      "collection": "Automatic on due date"
+{
+  "status": "success",
+  "data": 
+  [
+    {
+      "id": "pay-opt-01",
+      "title": "7 Day · Direct Debit",
+      "description": "Order on account. The invoice balance is automatically collected by Direct Debit on the 7-day due date.",
+      "savedAccount": "Saved account · **** 4821",
+      "summary": {
+        "paymentTerm": "7 days from invoice",
+        "method": "Direct Debit · **** 4821",
+        "collection": "Automatic on due date"
+      }
+    },
+    {
+      "id": "pay-opt-02",
+      "title": "On Order",
+      "description": "Pay when the PO is submitted. Use one payment method or split the order total across multiple payments.",
+      "savedAccount": "Immediate payment",
+      "summary": {
+        "paymentTerm": "Immediate",
+        "method": "Credit Card / Split",
+        "collection": "Manual on checkout"
+      }
     }
-  },
-  {
-    "id": "pay-opt-02",
-    "title": "On Order",
-    "description": "Pay when the PO is submitted. Use one payment method or split the order total across multiple payments.",
-    "savedAccount": "Immediate payment",
-    "summary": {
-      "paymentTerm": "Immediate",
-      "method": "Credit Card / Split",
-      "collection": "Manual on checkout"
-    }
-  }
-]
+  ]
+}
 ```
 
 ### `POST /create-order`
@@ -366,6 +457,8 @@ Submits the active cart as a finalized Purchase Order.
 **Response (201 Created):**
 ```json
 {
+  "status": "success",
+
   "orderId": "PO-90215",
   "status": "Submitted",
   "estimatedDelivery": "2023-11-05"
@@ -381,6 +474,8 @@ Retrieves the high-level statistics for the purchase orders page.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "openPos": {
     "count": 6,
     "totalValue": 8420.00
@@ -405,13 +500,17 @@ Retrieves the high-level statistics for the purchase orders page.
 Retrieves a list of available statuses for filtering purchase orders.
 **Response (200 OK):**
 ```json
-[
-  { "id": "all", "label": "All Statuses" },
-  { "id": "submitted", "label": "Submitted" },
-  { "id": "confirmed", "label": "Confirmed" },
-  { "id": "in_transit", "label": "In Transit" },
-  { "id": "completed", "label": "Completed" }
-]
+{
+  "status": "success",
+  "data": 
+  [
+    { "id": "all", "label": "All Statuses" },
+    { "id": "submitted", "label": "Submitted" },
+    { "id": "confirmed", "label": "Confirmed" },
+    { "id": "in_transit", "label": "In Transit" },
+    { "id": "completed", "label": "Completed" }
+  ]
+}
 ```
 
 ### `GET /purchase-orders`
@@ -424,6 +523,8 @@ Retrieves order history.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "data": [
     {
       "id": "PO-10488",
@@ -471,6 +572,8 @@ Retrieves full details of a specific Purchase Order.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "id": "PO-10488",
   "customerPoRef": "STORE-8841",
   "createdAt": "2026-08-07T09:12:00Z",
@@ -531,14 +634,18 @@ Retrieves full details of a specific Purchase Order.
 Retrieves the step-by-step status progression timeline for a specific purchase order.
 **Response (200 OK):**
 ```json
-[
-  { "step": "Submitted", "status": "Completed", "description": "7 Aug 9:12" },
-  { "step": "Confirmed", "status": "Completed", "description": "7 Aug 9:24" },
-  { "step": "Packed", "status": "Completed", "description": "7 Aug 12:05" },
-  { "step": "In Transit", "status": "Active", "description": "ETA 2-4 PM" },
-  { "step": "Delivered", "status": "Pending", "description": "Pending" },
-  { "step": "Received", "status": "Pending", "description": "Pending" }
-]
+{
+  "status": "success",
+  "data": 
+  [
+    { "step": "Submitted", "status": "Completed", "description": "7 Aug 9:12" },
+    { "step": "Confirmed", "status": "Completed", "description": "7 Aug 9:24" },
+    { "step": "Packed", "status": "Completed", "description": "7 Aug 12:05" },
+    { "step": "In Transit", "status": "Active", "description": "ETA 2-4 PM" },
+    { "step": "Delivered", "status": "Pending", "description": "Pending" },
+    { "step": "Received", "status": "Pending", "description": "Pending" }
+  ]
+}
 ```
 
 ### `GET /purchase-orders/{id}/pdf`
@@ -554,6 +661,8 @@ Retrieves the high-level statistics for the deliveries page.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "arrivingToday": {
     "count": 1,
     "eta": "ETA 2:00-4:00 PM"
@@ -583,6 +692,8 @@ Retrieves delivery tracking records.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "data": [
     {
       "id": "DEL-62018",
@@ -624,6 +735,8 @@ Retrieves specific details about a delivery including exact dispatch quantities.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "id": "DEL-62018",
   "poId": "PO-10476",
   "locationName": "Brunswick Store",
@@ -695,6 +808,8 @@ Retrieves the high-level statistics for the receiving page.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "readyToReceive": {
     "count": 3,
     "description": "Delivered / awaiting check"
@@ -718,13 +833,17 @@ Retrieves the high-level statistics for the receiving page.
 Retrieves a list of standard reasons available when reporting a receiving variance (e.g., damaged, spoiled, missing).
 **Response (200 OK):**
 ```json
-[
-  { "id": "RSN-001", "label": "Damaged in transit" },
-  { "id": "RSN-002", "label": "Spoiled / Quality issue" },
-  { "id": "RSN-003", "label": "Missing from delivery" },
-  { "id": "RSN-004", "label": "Incorrect item supplied" },
-  { "id": "RSN-005", "label": "Packaging damaged" }
-]
+{
+  "status": "success",
+  "data": 
+  [
+    { "id": "RSN-001", "label": "Damaged in transit" },
+    { "id": "RSN-002", "label": "Spoiled / Quality issue" },
+    { "id": "RSN-003", "label": "Missing from delivery" },
+    { "id": "RSN-004", "label": "Incorrect item supplied" },
+    { "id": "RSN-005", "label": "Packaging damaged" }
+  ]
+}
 ```
 
 ### `GET /receiving`
@@ -737,6 +856,8 @@ Retrieves a paginated list of Purchase Orders that are currently awaiting receip
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "data": [
     {
       "poId": "PO-10476",
@@ -784,6 +905,8 @@ Fetches the expected receiving manifest for a specific Purchase Order.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "poId": "PO-10476",
   "deliveryId": "DEL-62018",
   "locationName": "Brunswick Store",
@@ -858,6 +981,8 @@ Saves an item-level variance report for a specific product being received.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "success": true
 }
 ```
@@ -891,6 +1016,8 @@ Submits the Goods Receipt Note (GRN) with actual received quantities.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "grnId": "GRN-22041",
   "poId": "PO-10476",
   "status": "Received",
@@ -907,6 +1034,8 @@ Retrieves the high-level statistics and account aging for the invoices page.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "outstanding": {
     "total": 5440.00,
     "invoiceCount": 7
@@ -943,6 +1072,8 @@ Retrieves a paginated list of invoices.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "data": [
     {
       "id": "INV-98214",
@@ -987,6 +1118,8 @@ Retrieves detailed line items for a specific invoice.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "id": "INV-98214",
   "issueDate": "2026-08-04",
   "dueDate": "2026-08-18",
@@ -1062,6 +1195,8 @@ Retrieves the high-level statistics for the claims page.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "openClaims": {
     "count": 2,
     "requestedAmount": 87.40
@@ -1080,6 +1215,7 @@ Retrieves a list of submitted claims and their current resolution status.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
   "data": [
     {
       "id": "CLM-3102",
@@ -1116,6 +1252,7 @@ Retrieves detailed information for a specific claim.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
   "id": "CLM-3102",
   "grnId": "GRN-22041",
   "status": "Under Review",
@@ -1178,6 +1315,8 @@ Initiate a new claim for missing, damaged, or poor quality goods.
 **Response (201 Created):**
 ```json
 {
+  "status": "success",
+
   "id": "CLM-40193",
   "status": "Submitted"
 }
@@ -1192,6 +1331,8 @@ Retrieves company account settings, terms, and delivery locations.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   "id": "B2B-10428",
   "businessName": "Melbourne Fresh Foods Pty Ltd",
   "abn": "72 608 441 920",
@@ -1223,6 +1364,8 @@ Retrieves all users with access to this B2B portal account.
 **Response (200 OK):**
 ```json
 {
+  "status": "success",
+
   
   "data": [
     {
@@ -1281,6 +1424,8 @@ Invites a new user to the company account.
 **Response (201 Created):**
 ```json
 {
+  "status": "success",
+
   "id": "USR-1031",
   "status": "Invite Sent"
 }

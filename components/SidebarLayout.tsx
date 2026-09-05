@@ -1,20 +1,42 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { clearAuthSession, getStoredUser } from '@/lib/auth';
+import { B2BUser } from '@/types';
+import { useCartStore } from '@/store/cartStore';
 
 export default function SidebarLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState<B2BUser | null>(null);
+  const cartItemCount = useCartStore((state) => state.itemCount);
   const pathname = usePathname();
   const router = useRouter();
+
+  useEffect(() => {
+    const stored = getStoredUser();
+    if (stored) {
+      setUser(stored);
+    }
+  }, []);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const handleLogout = () => {
-    document.cookie = "auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    clearAuthSession();
     router.push('/login');
   };
+
+  const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'User');
+  const displayAccount = user?.accountName || 'B2B Account';
+  const displayRole = user?.role ? `${user.role} · ${displayAccount}` : `${displayAccount}`;
+  const initials = displayName
+    .split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2) || 'US';
 
   return (
     <div className="app-wrapper">
@@ -24,13 +46,13 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
           <div className="brand-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 13c4-8 12-9 16-7-1 7-5 12-12 13-2-1-3-3-4-6Z" /><path d="M8 16c2-4 5-7 10-9" /></svg></div>
           <div className="brand-name">eFresh<small>B2B CUSTOMER PORTAL</small></div>
         </div>
-        <div className="account-mini"><div className="a-label">Customer Account</div><strong>Melbourne Fresh Foods</strong><span>B2B-10428 · 14 day terms</span></div>
+        <div className="account-mini"><div className="a-label">Customer Account</div><strong>{displayAccount}</strong><span>B2B-10428 · 14 day terms</span></div>
         <nav className="nav">
           <div className="nav-label">Overview</div>
           <Link href="/" className={"nav-item" + (pathname === "/" ? " active" : "")}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>Dashboard</Link>
           <div className="nav-label">Ordering</div>
           <Link href="/products" className={"nav-item" + (pathname === "/products" ? " active" : "")}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M5 6l1 14h12l1-14M9 10v6M15 10v6" /></svg>Order Products</Link>
-          <Link href="/cart" className={"nav-item" + (pathname === "/cart" ? " active" : "")}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 4h2l2 12h10l2-8H6" /><circle cx="9" cy="20" r="1" /><circle cx="17" cy="20" r="1" /></svg>Cart & Create PO <span className="nav-count" id="sideCartCount">0</span></Link>
+          <Link href="/cart" className={"nav-item" + (pathname === "/cart" ? " active" : "")}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 4h2l2 12h10l2-8H6" /><circle cx="9" cy="20" r="1" /><circle cx="17" cy="20" r="1" /></svg>Cart & Create PO <span className="nav-count" id="sideCartCount">{cartItemCount}</span></Link>
           <Link href="/purchase-orders" className={"nav-item" + (pathname === "/purchase-orders" ? " active" : "")}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 3h9l3 3v15H6z" /><path d="M9 11h6M9 15h6M9 7h3" /></svg>Purchase Orders <span className="nav-count">6</span></Link>
 
           <div className="nav-label">Deliveries</div>
@@ -42,7 +64,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
           <div className="nav-label">Account</div>
           <Link href="/account" className={"nav-item" + (pathname === "/account" ? " active" : "")}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4" /><path d="M4 21c1-5 4-7 8-7s7 2 8 7" /></svg>Account & Users</Link>
         </nav>
-        <div className="sidebar-foot"><div className="side-avatar">AW</div><div><strong>Alex Wong</strong><small>Buyer · Brunswick Store</small></div></div>
+        <div className="sidebar-foot"><div className="side-avatar">{initials}</div><div><strong>{displayName}</strong><small>{displayRole}</small></div></div>
 
       </div>
       <div
@@ -61,7 +83,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
             </button>
             <button className="icon-button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></svg><span className="notify-dot"></span></button>
-            <div className="profile"><div className="avatar">AW</div><div><div className="profile-name">Alex Wong</div><div className="profile-role">Buyer · Melbourne Fresh Foods</div></div></div>
+            <div className="profile"><div className="avatar">{initials}</div><div><div className="profile-name">{displayName}</div><div className="profile-role">{displayRole}</div></div></div>
           </div>
         </header>
         <div className="content">{children}</div>
