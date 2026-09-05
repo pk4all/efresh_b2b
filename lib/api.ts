@@ -18,6 +18,15 @@ import {
   PurchaseOrderStatusOptionsResponse,
   PurchaseOrdersResponse,
   PurchaseOrderQueryParams,
+  PurchaseOrderDetailResponse,
+  PurchaseOrderDetail,
+  DeliveriesSummaryResponse,
+  DeliveriesResponse,
+  DeliveryQueryParams,
+  ReceivingSummaryResponse,
+  ReceivingResponse,
+  ReceivingQueryParams,
+  ReceivingReason,
 } from '@/types';
 
 export * from '@/types';
@@ -337,6 +346,142 @@ export async function getB2BPurchaseOrders(
   const url = `${API_BASE_URL}/api/v1/b2b/purchase-orders${queryString ? `?${queryString}` : ''}`;
   return authFetch(url);
 }
+
+export async function getB2BPurchaseOrderById(
+  po_id: string,
+  vendor_id?: string
+): Promise<PurchaseOrderDetailResponse> {
+  const user = getStoredUser();
+  const vId = vendor_id || user?.accountName;
+  const url = `${API_BASE_URL}/api/v1/b2b/purchase-orders/${encodeURIComponent(po_id)}${vId ? `?vendor_id=${encodeURIComponent(vId)}` : ''}`;
+  return authFetch(url);
+}
+
+export async function getB2BPurchaseOrderTimeline(
+  po_id: string,
+  vendor_id?: string
+): Promise<{ status?: string; data: Array<{ step: string; status: string; description: string }> }> {
+  const user = getStoredUser();
+  const vId = vendor_id || user?.accountName;
+  const url = `${API_BASE_URL}/api/v1/b2b/purchase-orders/${encodeURIComponent(po_id)}/timeline${vId ? `?vendor_id=${encodeURIComponent(vId)}` : ''}`;
+  return authFetch(url);
+}
+
+export async function downloadB2BPurchaseOrderPdf(
+  po_id: string,
+  vendor_id?: string
+): Promise<Blob> {
+  const token = getStoredToken();
+  const user = getStoredUser();
+  const vId = vendor_id || user?.accountName;
+  const url = `${API_BASE_URL}/api/v1/b2b/purchase-orders/${encodeURIComponent(po_id)}/pdf${vId ? `?vendor_id=${encodeURIComponent(vId)}` : ''}`;
+
+  const headers: Record<string, string> = {
+    'Accept': 'application/pdf, application/json, */*',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+  };
+
+  const response = await fetch(url, { headers });
+  if (!response.ok) {
+    const errorJson = await response.json().catch(() => ({}));
+    throw new Error(errorJson.detail || errorJson.message || `Failed to download PDF (${response.status})`);
+  }
+
+  return await response.blob();
+}
+
+// -------------------------------------------------------------
+// Deliveries Module APIs
+// -------------------------------------------------------------
+
+export async function getB2BDeliveriesSummary(
+  vendor_id?: string
+): Promise<DeliveriesSummaryResponse> {
+  const user = getStoredUser();
+  const vId = vendor_id || user?.accountName;
+  const url = `${API_BASE_URL}/api/v1/b2b/deliveries/summary${vId ? `?vendor_id=${encodeURIComponent(vId)}` : ''}`;
+  return authFetch(url);
+}
+
+export async function getB2BDeliveries(
+  params?: DeliveryQueryParams
+): Promise<DeliveriesResponse> {
+  const user = getStoredUser();
+  const vId = params?.vendor_id || user?.accountName;
+  const query = new URLSearchParams();
+  if (vId) query.append('vendor_id', vId);
+  if (params?.status && params.status !== 'all' && params.status !== 'All' && params.status !== 'All Statuses') {
+    query.append('status', params.status);
+  }
+  if (params?.locationId && params.locationId !== 'all' && params.locationId !== 'All' && params.locationId !== 'All Locations') {
+    query.append('locationId', params.locationId);
+  }
+  if (params?.search) {
+    query.append('search', params.search);
+  }
+  if (params?.page) {
+    query.append('page', params.page.toString());
+  }
+  if (params?.limit) {
+    query.append('limit', params.limit.toString());
+  }
+
+  const queryString = query.toString();
+  const url = `${API_BASE_URL}/api/v1/b2b/deliveries${queryString ? `?${queryString}` : ''}`;
+  return authFetch(url);
+}
+
+// -------------------------------------------------------------
+// Receiving (GRN) Module APIs
+// -------------------------------------------------------------
+
+export async function getB2BReceivingSummary(
+  vendor_id?: string
+): Promise<ReceivingSummaryResponse> {
+  const user = getStoredUser();
+  const vId = vendor_id || user?.accountName;
+  const url = `${API_BASE_URL}/api/v1/b2b/receiving/summary${vId ? `?vendor_id=${encodeURIComponent(vId)}` : ''}`;
+  return authFetch(url);
+}
+
+export async function getB2BReceivingReasons(
+  vendor_id?: string
+): Promise<{ status?: string; data: ReceivingReason[] }> {
+  const user = getStoredUser();
+  const vId = vendor_id || user?.accountName;
+  const url = `${API_BASE_URL}/api/v1/b2b/receiving/reasons${vId ? `?vendor_id=${encodeURIComponent(vId)}` : ''}`;
+  return authFetch(url);
+}
+
+export async function getB2BReceivingList(
+  params?: ReceivingQueryParams
+): Promise<ReceivingResponse> {
+  const user = getStoredUser();
+  const vId = params?.vendor_id || user?.accountName;
+  const query = new URLSearchParams();
+  if (vId) query.append('vendor_id', vId);
+  if (params?.status && params.status !== 'all' && params.status !== 'All' && params.status !== 'All Due to Receive') {
+    query.append('status', params.status);
+  }
+  if (params?.locationId && params.locationId !== 'all' && params.locationId !== 'All' && params.locationId !== 'All Locations') {
+    query.append('locationId', params.locationId);
+  }
+  if (params?.search) {
+    query.append('search', params.search);
+  }
+  if (params?.page) {
+    query.append('page', params.page.toString());
+  }
+  if (params?.limit) {
+    query.append('limit', params.limit.toString());
+  }
+
+  const queryString = query.toString();
+  const url = `${API_BASE_URL}/api/v1/b2b/receiving${queryString ? `?${queryString}` : ''}`;
+  return authFetch(url);
+}
+
+
 
 
 
