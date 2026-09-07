@@ -332,7 +332,14 @@ export default function CartPage() {
         </div>
 
         <div className="detail-grid">
-          <div>
+          <div className="cart-left">
+            <div className="checkout-steps">
+              <div className="checkout-step done">1 · Cart</div>
+              <div className="checkout-step done">2 · Delivery</div>
+              <div className="checkout-step active">3 · Payment</div>
+              <div className="checkout-step">4 · Submit</div>
+            </div>
+
             <div className="card">
               <div className="card-head">
                 <div>
@@ -343,7 +350,8 @@ export default function CartPage() {
                   Slab Pricing Applied
                 </span>
               </div>
-              <div className="table-wrap">
+              {/* Desktop Table View */}
+              <div className="table-wrap cart-desktop-table">
                 <table className="table" style={{ minWidth: '1000px' }}>
                   <thead>
                     <tr>
@@ -506,6 +514,138 @@ export default function CartPage() {
                       })}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Card List View */}
+              <div className="cart-mobile-list">
+                {mounted && items.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '24px', color: 'var(--muted)', fontSize: '12px' }}>
+                    Your cart is empty.
+                  </div>
+                ) : (
+                  mounted &&
+                  items.map((item) => {
+                    const unitLabel =
+                      item.unitType ||
+                      item.unit_type_name ||
+                      item.product?.unitType ||
+                      item.product?.unit_type_name ||
+                      item.product?.unit ||
+                      'Unit';
+                    const allTiers = item.product?.priceTiers || item.product?.tiers || [];
+                    const tiers =
+                      unitLabel && allTiers.some((t) => Boolean(t.unitType))
+                        ? allTiers.filter(
+                            (t) => !t.unitType || t.unitType.toLowerCase() === unitLabel.toLowerCase()
+                          )
+                        : allTiers;
+                    const basePrice =
+                      tiers.length > 0
+                        ? Number(tiers[0].price)
+                        : Number(item.product?.startingCost ?? item.product?.price ?? item.unitPrice ?? 0);
+                    const appliedCost =
+                      item.appliedPriceTier?.price ?? getTierPrice(item.quantity, tiers, basePrice);
+                    const appliedTier =
+                      item.appliedPriceTier?.label ||
+                      tiers.find((t) => Number(t.price) === appliedCost)?.label ||
+                      'Base';
+                    const savingPerUnit = basePrice > appliedCost ? basePrice - appliedCost : 0;
+                    const lineTotal = item.total || appliedCost * item.quantity;
+                    const productName = item.name || item.product?.name || item.productId;
+                    const productMeta = [item.sku || item.product?.sku, unitLabel]
+                      .filter(Boolean)
+                      .join(' · ');
+
+                    const cartItemId = item.cartItemId || item.id || '';
+
+                    return (
+                      <div key={cartItemId || `${item.productId}_${unitLabel}`} className="cart-mobile-item">
+                        <div className="cmi-header">
+                          <div>
+                            <div className="cmi-title">{productName}</div>
+                            <div className="cmi-subtext">{productMeta || 'Standard Item'}</div>
+                          </div>
+                          <button
+                            type="button"
+                            className="ci-delete-btn"
+                            title="Remove item"
+                            aria-label="Remove item"
+                            onClick={() => removeItem(cartItemId, item.productId, unitLabel)}
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              width="16"
+                              height="16"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
+                            </svg>
+                          </button>
+                        </div>
+
+                        <div className="cmi-price-grid">
+                          <div className="cmi-price-box">
+                            <label>Standard Cost</label>
+                            <b>${basePrice.toFixed(2)}</b>
+                          </div>
+                          <div className="cmi-price-box applied">
+                            <label>Applied Cost ({appliedCost < basePrice ? appliedTier : 'Standard'})</label>
+                            <b>${appliedCost.toFixed(2)}</b>
+                          </div>
+                          {savingPerUnit > 0 && (
+                            <div className="cmi-price-box" style={{ gridColumn: '1 / -1', color: 'var(--green)' }}>
+                              <label style={{ color: 'var(--green)' }}>Saving per unit</label>
+                              <b>&minus;${savingPerUnit.toFixed(2)} / {unitLabel}</b>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="cmi-bottom-row">
+                          <div className="qty-box">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateQuantity(
+                                  cartItemId,
+                                  item.productId,
+                                  item.quantity - 1,
+                                  unitLabel,
+                                  item.product
+                                )
+                              }
+                            >
+                              &minus;
+                            </button>
+                            <input type="text" readOnly value={item.quantity} />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateQuantity(
+                                  cartItemId,
+                                  item.productId,
+                                  item.quantity + 1,
+                                  unitLabel,
+                                  item.product
+                                )
+                              }
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          <div className="cmi-total-box">
+                            <label>Line Total</label>
+                            <b>${lineTotal.toFixed(2)}</b>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 

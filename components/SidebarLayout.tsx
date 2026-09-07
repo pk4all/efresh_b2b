@@ -21,12 +21,33 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
     }
   }, []);
 
+  // Auto-close sidebar on route change
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const handleLogout = () => {
     clearAuthSession();
     router.push('/login');
   };
+
+  const getPageTitle = (path: string) => {
+    if (path === '/') return 'Dashboard';
+    if (path.startsWith('/products')) return 'Order Products';
+    if (path.startsWith('/cart')) return 'Cart & Create PO';
+    if (path.startsWith('/purchase-orders')) return 'Purchase Orders';
+    if (path.startsWith('/deliveries')) return 'Track Deliveries';
+    if (path.startsWith('/receiving')) return 'Receive Goods';
+    if (path.startsWith('/invoices')) return 'Invoices';
+    if (path.startsWith('/claims')) return 'Claims & Credits';
+    if (path.startsWith('/account')) return 'Account & Users';
+    if (path.startsWith('/developer')) return 'Developer Notes';
+    return 'Customer Portal';
+  };
+
+  const pageTitle = getPageTitle(pathname);
 
   const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'User');
   const displayAccount = user?.accountName || 'B2B Account';
@@ -75,7 +96,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
         <header className="topbar">
           <div className="top-left">
             <button className="mobile-menu-btn" onClick={toggleSidebar}>☰</button>
-            <div className="breadcrumb">Customer Portal / <strong id="crumb">Dashboard</strong></div>
+            <div className="breadcrumb">Customer Portal / <strong id="crumb">{pageTitle}</strong></div>
           </div>
           <div className="top-actions">
             <div className="search-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg><input placeholder="Search products, PO, invoice, delivery..." /></div>
