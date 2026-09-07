@@ -832,9 +832,9 @@ export default function CartPage() {
                   <span>PO Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
-                <div className="payment-summary-line" style={{ marginTop: '8px' }}>
+                <div className="sum-row" style={{ marginTop: '8px', borderTop: '1px solid #edf2f7', paddingTop: '8px' }}>
                   <span>Payment</span>
-                  <b>{paymentOptionLabel}</b>
+                  <b style={{ color: 'var(--blue)' }}>{paymentOptionLabel}</b>
                 </div>
                 <div className="callout green" style={{ marginTop: '10px' }}>
                   <strong>Pricing snapshot:</strong> each line will save the exact applied slab and
