@@ -27,6 +27,24 @@ import {
   ReceivingResponse,
   ReceivingQueryParams,
   ReceivingReason,
+  InvoicesSummaryResponse,
+  InvoicesResponse,
+  InvoiceQueryParams,
+  InvoiceDetailResponse,
+  InvoiceDetail,
+  ClaimsSummaryResponse,
+  ClaimsResponse,
+  ClaimQueryParams,
+  ClaimDetailResponse,
+  ClaimDetail,
+  CreateClaimPayload,
+  CreateClaimResponse,
+  AccountDetailResponse,
+  AccountDetail,
+  AccountUsersResponse,
+  AccountUser,
+  CreateAccountUserPayload,
+  CreateAccountUserResponse,
 } from '@/types';
 
 export * from '@/types';
@@ -479,6 +497,165 @@ export async function getB2BReceivingList(
   const queryString = query.toString();
   const url = `${API_BASE_URL}/api/v1/b2b/receiving${queryString ? `?${queryString}` : ''}`;
   return authFetch(url);
+}
+
+// -------------------------------------------------------------
+// Invoices & Billing Module APIs
+// -------------------------------------------------------------
+
+export async function getB2BInvoicesSummary(
+  vendor_id?: string
+): Promise<InvoicesSummaryResponse> {
+  const user = getStoredUser();
+  const vId = vendor_id || user?.accountName;
+  const url = `${API_BASE_URL}/api/v1/b2b/invoices/summary${vId ? `?vendor_id=${encodeURIComponent(vId)}` : ''}`;
+  return authFetch(url);
+}
+
+export async function getB2BInvoices(
+  params?: InvoiceQueryParams
+): Promise<InvoicesResponse> {
+  const user = getStoredUser();
+  const vId = params?.vendor_id || user?.accountName;
+  const query = new URLSearchParams();
+  if (vId) query.append('vendor_id', vId);
+  if (params?.status && params.status !== 'all' && params.status !== 'All' && params.status !== 'All Statuses') {
+    query.append('status', params.status);
+  }
+  if (params?.locationId && params.locationId !== 'all' && params.locationId !== 'All' && params.locationId !== 'All Locations') {
+    query.append('locationId', params.locationId);
+  }
+  if (params?.search) {
+    query.append('search', params.search);
+  }
+  if (params?.page) {
+    query.append('page', params.page.toString());
+  }
+  if (params?.limit) {
+    query.append('limit', params.limit.toString());
+  }
+
+  const queryString = query.toString();
+  const url = `${API_BASE_URL}/api/v1/b2b/invoices${queryString ? `?${queryString}` : ''}`;
+  return authFetch(url);
+}
+
+export async function getB2BInvoiceById(
+  invoiceId: string,
+  vendor_id?: string
+): Promise<InvoiceDetailResponse> {
+  const user = getStoredUser();
+  const vId = vendor_id || user?.accountName;
+  const url = `${API_BASE_URL}/api/v1/b2b/invoices/${encodeURIComponent(invoiceId)}${vId ? `?vendor_id=${encodeURIComponent(vId)}` : ''}`;
+  return authFetch(url);
+}
+
+// -------------------------------------------------------------
+// Claims & Credits Module APIs
+// -------------------------------------------------------------
+
+export async function getB2BClaimsSummary(
+  vendor_id?: string
+): Promise<ClaimsSummaryResponse> {
+  const user = getStoredUser();
+  const vId = vendor_id || user?.accountName;
+  const url = `${API_BASE_URL}/api/v1/b2b/claims/summary${vId ? `?vendor_id=${encodeURIComponent(vId)}` : ''}`;
+  return authFetch(url);
+}
+
+export async function getB2BClaims(
+  params?: ClaimQueryParams
+): Promise<ClaimsResponse> {
+  const user = getStoredUser();
+  const vId = params?.vendor_id || user?.accountName;
+  const query = new URLSearchParams();
+  if (vId) query.append('vendor_id', vId);
+  if (params?.status && params.status !== 'all' && params.status !== 'All' && params.status !== 'All Statuses') {
+    query.append('status', params.status);
+  }
+  if (params?.search) {
+    query.append('search', params.search);
+  }
+  if (params?.page) {
+    query.append('page', params.page.toString());
+  }
+  if (params?.limit) {
+    query.append('limit', params.limit.toString());
+  }
+
+  const queryString = query.toString();
+  const url = `${API_BASE_URL}/api/v1/b2b/claims${queryString ? `?${queryString}` : ''}`;
+  return authFetch(url);
+}
+
+export async function getB2BClaimById(
+  claimId: string,
+  vendor_id?: string
+): Promise<ClaimDetailResponse> {
+  const user = getStoredUser();
+  const vId = vendor_id || user?.accountName;
+  const url = `${API_BASE_URL}/api/v1/b2b/claims/${encodeURIComponent(claimId)}${vId ? `?vendor_id=${encodeURIComponent(vId)}` : ''}`;
+  return authFetch(url);
+}
+
+export async function createB2BClaim(
+  payload: CreateClaimPayload
+): Promise<CreateClaimResponse> {
+  const user = getStoredUser();
+  const vId = payload.vendor_id || user?.accountName;
+  const query = new URLSearchParams();
+  if (vId) query.append('vendor_id', vId);
+
+  const queryString = query.toString();
+  const url = `${API_BASE_URL}/api/v1/b2b/claims${queryString ? `?${queryString}` : ''}`;
+  return authFetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+// -------------------------------------------------------------
+// Account & Users Module APIs
+// -------------------------------------------------------------
+
+export async function getB2BAccount(
+  vendor_id?: string
+): Promise<AccountDetailResponse> {
+  const user = getStoredUser();
+  const vId = vendor_id || user?.accountName;
+  const url = `${API_BASE_URL}/api/v1/b2b/account${vId ? `?vendor_id=${encodeURIComponent(vId)}` : ''}`;
+  return authFetch(url);
+}
+
+export async function getB2BAccountUsers(
+  vendor_id?: string
+): Promise<AccountUsersResponse> {
+  const user = getStoredUser();
+  const vId = vendor_id || user?.accountName;
+  const url = `${API_BASE_URL}/api/v1/b2b/account/users${vId ? `?vendor_id=${encodeURIComponent(vId)}` : ''}`;
+  return authFetch(url);
+}
+
+export async function createB2BAccountUser(
+  payload: CreateAccountUserPayload
+): Promise<CreateAccountUserResponse> {
+  const user = getStoredUser();
+  const vId = payload.vendor_id || user?.accountName;
+  const query = new URLSearchParams();
+  if (vId) query.append('vendor_id', vId);
+
+  const queryString = query.toString();
+  const url = `${API_BASE_URL}/api/v1/b2b/account/users${queryString ? `?${queryString}` : ''}`;
+  return authFetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
 }
 
 
